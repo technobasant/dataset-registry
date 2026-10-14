@@ -70,7 +70,9 @@ web-install:
 web-check:     ## eslint, tsc, next build
 	cd web && npm run lint && npm run typecheck && npm run build
 
-e2e:           ## Playwright: starts its own API (needs PostgreSQL on DR_PG_PORT) and the built UI
+e2e:           ## Playwright: starts its own API against the compose PostgreSQL (make up first) and the built UI
+	$(COMPOSE) exec -T postgres psql -U registry -d registry -tAc "SELECT 1 FROM pg_database WHERE datname = 'registry_e2e'" | grep -q 1 \
+	  || $(COMPOSE) exec -T postgres createdb -U registry registry_e2e
 	cd web && npx playwright test e2e/flow.spec.ts
 
 screenshots:   ## PNGs of the seeded stack for the README (after make up seed)

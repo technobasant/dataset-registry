@@ -189,7 +189,7 @@ func seed(args []string) error {
 			fmt.Sprintf("/api/v1/datasets/%d/consumers", ids[cs.dataset]),
 			map[string]string{"contact": cs.who.name + "@lumenloom.example", "purpose": cs.purpose}, nil)
 		var ae *apiError
-		if err != nil && !(errors.As(err, &ae) && ae.Status == http.StatusConflict) {
+		if err != nil && (!errors.As(err, &ae) || ae.Status != http.StatusConflict) {
 			return fmt.Errorf("consumer %s on %s: %w", cs.who.team, cs.dataset.Name, err)
 		}
 	}

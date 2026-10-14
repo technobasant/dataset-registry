@@ -483,9 +483,9 @@ func benchFreshness(args []string) error {
 			t0 := time.Now().Add(3 * time.Second)
 			if _, err := st.pool.Exec(ctx, `
 				INSERT INTO datasets (namespace, name, registered, owner_team, owner_person, freshness_slo_seconds, last_write_at, slo_status)
-				SELECT 'bench://fresh', 'd' || g, TRUE, 't', 'p', $1,
-				       $2::timestamptz - make_interval(secs => $1) + make_interval(secs => $3 * g / $4::float8), 'healthy'
-				FROM generate_series(0, $4 - 1) g`, slo, t0, window.Seconds(), *k); err != nil {
+				SELECT 'bench://fresh', 'd' || g, TRUE, 't', 'p', $1::int,
+				       $2::timestamptz - make_interval(secs => $1::int::float8) + make_interval(secs => $3::float8 * g / $4::int::float8), 'healthy'
+				FROM generate_series(0, $4::int - 1) g`, slo, t0, window.Seconds(), *k); err != nil {
 				return err
 			}
 			ev := freshness.New(st.pool, st.log, st.m, interval)
