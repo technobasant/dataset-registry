@@ -1,0 +1,251 @@
+{
+  "lighthouse": "13.5.0",
+  "runs_per_page": 3,
+  "chromium": "chromium-1248/chrome-mac-arm64",
+  "results": {
+    "desktop": {
+      "dataset list": {
+        "url": "http://localhost:3088/",
+        "runs": [
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 431,
+            "tbt_ms": 0,
+            "failing_a11y": []
+          },
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 428,
+            "tbt_ms": 0,
+            "failing_a11y": []
+          },
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 432,
+            "tbt_ms": 0,
+            "failing_a11y": []
+          }
+        ],
+        "median": {
+          "performance": 100,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 100,
+          "lcp_ms": 431,
+          "tbt_ms": 0
+        }
+      },
+      "dataset page (lineage, diff)": {
+        "url": "http://localhost:3088/datasets/8",
+        "runs": [
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 465,
+            "tbt_ms": 0,
+            "failing_a11y": []
+          },
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 465,
+            "tbt_ms": 0,
+            "failing_a11y": []
+          },
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 467,
+            "tbt_ms": 0,
+            "failing_a11y": []
+          }
+        ],
+        "median": {
+          "performance": 100,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 100,
+          "lcp_ms": 465,
+          "tbt_ms": 0
+        }
+      },
+      "change request": {
+        "url": "http://localhost:3088/change-requests/1",
+        "runs": [
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 435,
+            "tbt_ms": 0,
+            "failing_a11y": []
+          },
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 427,
+            "tbt_ms": 0,
+            "failing_a11y": []
+          },
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 425,
+            "tbt_ms": 0,
+            "failing_a11y": []
+          }
+        ],
+        "median": {
+          "performance": 100,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 100,
+          "lcp_ms": 427,
+          "tbt_ms": 0
+        }
+      }
+    },
+    "mobile": {
+      "dataset list": {
+        "url": "http://localhost:3088/",
+        "runs": [
+          {
+            "performance": 99,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 2030,
+            "tbt_ms": 23,
+            "failing_a11y": []
+          },
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 1878,
+            "tbt_ms": 12,
+            "failing_a11y": []
+          },
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 1877,
+            "tbt_ms": 11,
+            "failing_a11y": []
+          }
+        ],
+        "median": {
+          "performance": 100,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 100,
+          "lcp_ms": 1878,
+          "tbt_ms": 12
+        }
+      },
+      "dataset page (lineage, diff)": {
+        "url": "http://localhost:3088/datasets/8",
+        "runs": [
+          {
+            "performance": 99,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 2189,
+            "tbt_ms": 19,
+            "failing_a11y": []
+          },
+          {
+            "performance": 99,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 2180,
+            "tbt_ms": 16,
+            "failing_a11y": []
+          },
+          {
+            "performance": 99,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 2177,
+            "tbt_ms": 13,
+            "failing_a11y": []
+          }
+        ],
+        "median": {
+          "performance": 99,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 100,
+          "lcp_ms": 2180,
+          "tbt_ms": 16
+        }
+      },
+      "change request": {
+        "url": "http://localhost:3088/change-requests/1",
+        "runs": [
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 1881,
+            "tbt_ms": 12,
+            "failing_a11y": []
+          },
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 1876,
+            "tbt_ms": 8,
+            "failing_a11y": []
+          },
+          {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "lcp_ms": 1875,
+            "tbt_ms": 9,
+            "failing_a11y": []
+          }
+        ],
+        "median": {
+          "performance": 100,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 100,
+          "lcp_ms": 1876,
+          "tbt_ms": 9
+        }
+      }
+    }
+  }
+}

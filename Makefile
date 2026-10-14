@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 COMPOSE := docker compose
-TOOLS := $(COMPOSE) --profile tools run --rm tools
+TOOLS := $(COMPOSE) --profile tools run --build --rm tools
 
 SQLC_IMAGE := sqlc/sqlc:1.30.0
 LINT_IMAGE := golangci/golangci-lint:v2.14.0

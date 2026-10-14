@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Flash, one, type SearchParams } from "@/components/Flash";
 import { StatusBadge } from "@/components/StatusBadge";
 import { api } from "@/lib/api";
-import { ago, duration } from "@/lib/format";
+import { ago, duration, qualified } from "@/lib/format";
 import type { Dataset, SLOStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -95,9 +95,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           <ul className="unowned">
             {unowned.map((d) => (
               <li key={d.id}>
-                <Link href={`/datasets/${d.id}`}>
-                  {d.namespace}/{d.name}
-                </Link>{" "}
+                <Link href={`/datasets/${d.id}`}>{qualified(d.namespace, d.name)}</Link>{" "}
                 <span className="muted small">last write {ago(d.last_write_at)}</span>
               </li>
             ))}

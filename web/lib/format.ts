@@ -25,3 +25,7 @@ export const statusLabel: Record<SLOStatus, string> = {
   breached: "Breached",
   unknown: "No data",
 };
+
+export function qualified(namespace: string, name: string): string {
+  return name.startsWith("/") ? `${namespace}${name}` : `${namespace}/${name}`;
+}

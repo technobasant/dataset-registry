@@ -3,7 +3,7 @@
 import "@xyflow/react/dist/style.css";
 
 import dagre from "@dagrejs/dagre";
-import { Background, Controls, MarkerType, ReactFlow, type Edge, type Node } from "@xyflow/react";
+import { Background, Controls, MarkerType, Position, ReactFlow, type Edge, type Node } from "@xyflow/react";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 
@@ -39,6 +39,8 @@ function layout(g: Graph): { nodes: Node[]; edges: Edge[] } {
     return {
       id: n.id,
       position: { x: p.x - W / 2, y: p.y - H / 2 },
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
       data: {
         label: (
           <div title={`${n.namespace}/${n.name}`}>
@@ -72,6 +74,8 @@ export function LineageGraph({ graph }: { graph: Graph }) {
         nodes={nodes}
         edges={edges}
         fitView
+        fitViewOptions={{ padding: 0.05 }}
+        minZoom={0.2}
         nodesDraggable={false}
         nodesConnectable={false}
         proOptions={{ hideAttribution: true }}
