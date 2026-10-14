@@ -1,0 +1,137 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  SQLC_IMAGE: sqlc/sqlc:1.30.0
+  LINT_IMAGE: golangci/golangci-lint:v2.14.0
+  REDOCLY_IMAGE: redocly/cli:2.63.0
+
+jobs:
+  go:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:18.1-alpine
+        env:
+          POSTGRES_USER: registry
+          POSTGRES_PASSWORD: registry
+          POSTGRES_DB: registry
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U registry" --health-interval 2s --health-timeout 3s --health-retries 30
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: api/go.mod
+          cache-dependency-path: api/go.sum
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+      - name: go vet
+        run: go vet ./...
+      - name: golangci-lint
+        run: docker run --rm -v "$PWD":/src -v "$(go env GOMODCACHE)":/go/pkg/mod -w /src "$LINT_IMAGE" golangci-lint run ./...
+      - name: sqlc generated code is current
+        run: docker run --rm -v "$PWD":/src -w /src "$SQLC_IMAGE" diff
+      - name: tests (race, integration against PostgreSQL 18)
+        env:
+          TEST_DATABASE_URL: postgres://registry:registry@127.0.0.1:5432/registry?sslmode=disable
+        run: go test -race -count=1 -coverpkg=./internal/... -coverprofile=coverage.out ./...
+      - name: coverage
+        run: |
+          total=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}')
+          echo "Statement coverage of internal/: $total" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: compatibility checker against the labelled cases
+        run: go run ./cmd/drbench compat | tee -a "$GITHUB_STEP_SUMMARY"
+
+  openapi:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: redocly lint
+        run: docker run --rm -v "$PWD":/spec -w /spec "$REDOCLY_IMAGE" lint api/openapi/openapi.yaml
+
+  web:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+
+  e2e:
+    runs-on: ubuntu-24.04
+    needs: [go, web]
+    services:
+      postgres:
+        image: postgres:18.1-alpine
+        env:
+          POSTGRES_USER: registry
+          POSTGRES_PASSWORD: registry
+          POSTGRES_DB: registry_e2e
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U registry" --health-interval 2s --health-timeout 3s --health-retries 30
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: api/go.mod
+          cache-dependency-path: api/go.sum
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: playwright
+        env:
+          E2E_DATABASE_URL: postgres://registry:registry@127.0.0.1:5432/registry_e2e?sslmode=disable
+        run: npx playwright test e2e/flow.spec.ts
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/playwright-report
+
+  stack:
+    runs-on: ubuntu-24.04
+    needs: [go, web]
+    steps:
+      - uses: actions/checkout@v5
+      - name: make up
+        run: make up
+      - name: make seed
+        run: make seed
+      - name: make demo
+        run: sleep 12 && make demo
+      - name: breach visible in Prometheus format
+        run: curl -fsS localhost:8088/metrics | grep 'registry_dataset_slo_status{dataset="iceberg://lake/raw.inventory_snapshots".*status="breached".*} 1'
+      - if: always()
+        run: docker compose logs --no-color api | tail -100
+      - if: always()
+        run: make clean
