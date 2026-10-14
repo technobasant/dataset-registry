@@ -1,0 +1,2906 @@
+{
+ "description": "Labelled schema changes for the compatibility checker. Labels are by hand from the validity-set definition: BACKWARD breaks if some document valid under old fails new; FORWARD breaks if some document valid under new fails old. Each label is cross-checked by the oracle, which validates generated probe documents with a real JSON Schema validator.",
+ "cases": [
+  {
+   "name": "identical",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "safe"
+   },
+   "note": "no change"
+  },
+  {
+   "name": "description added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ],
+    "description": "Orders as placed at checkout"
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "safe"
+   },
+   "note": "annotations do not change validity"
+  },
+  {
+   "name": "optional field added, open object",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "channel": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "strict reading: an open object already accepted 'channel' with any value, so older documents may fail the new type"
+  },
+  {
+   "name": "optional field added, closed object",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ],
+    "additionalProperties": false
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "channel": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ],
+    "additionalProperties": false
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "old consumers validating a closed contract reject the new field"
+  },
+  {
+   "name": "required field added, open object",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "currency": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents",
+     "currency"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "documents written before the field existed lack it"
+  },
+  {
+   "name": "required field added, closed object",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ],
+    "additionalProperties": false
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "currency": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents",
+     "currency"
+    ],
+    "additionalProperties": false
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "breaking"
+   },
+   "note": "old documents lack it; new documents carry a field the closed old contract rejects"
+  },
+  {
+   "name": "optional field removed, open object",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "the new contract no longer constrains 'status', so new documents may carry values the old one rejects"
+  },
+  {
+   "name": "optional field removed, closed object",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ],
+    "additionalProperties": false
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ],
+    "additionalProperties": false
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "older documents that carry 'status' fail the closed new contract"
+  },
+  {
+   "name": "required field removed, open object",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "consumers relying on amount_cents find it missing"
+  },
+  {
+   "name": "required field removed, closed object",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ],
+    "additionalProperties": false
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id"
+    ],
+    "additionalProperties": false
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "breaking"
+   },
+   "note": "both directions: old documents carry it, new documents lack it"
+  },
+  {
+   "name": "optional to required",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents",
+     "status"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "history without 'status' fails; new data always has it, which old consumers accept"
+  },
+  {
+   "name": "required to optional",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "consumers relying on amount_cents can find it missing"
+  },
+  {
+   "name": "integer widened to number",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "number"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "type widening: consumers expecting integers receive 12.5"
+  },
+  {
+   "name": "number narrowed to integer",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "number"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "type narrowing: fractional values in history fail"
+  },
+  {
+   "name": "string changed to integer",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "integer"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "breaking"
+   },
+   "note": "incompatible type change"
+  },
+  {
+   "name": "nullable added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "consumers that never saw null now receive it"
+  },
+  {
+   "name": "nullable removed",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "history with nulls fails"
+  },
+  {
+   "name": "enum value added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped",
+       "returned"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "consumers with a closed set of cases receive an unknown value"
+  },
+  {
+   "name": "enum value removed (narrowing)",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "enum narrowing: history with 'shipped' fails"
+  },
+  {
+   "name": "enum values swapped",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "delivered"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "breaking"
+   },
+   "note": "one value removed, one added"
+  },
+  {
+   "name": "enum introduced on a free string",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "free-text history fails the new closed set"
+  },
+  {
+   "name": "enum dropped",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "consumers switching on status receive arbitrary strings"
+  },
+  {
+   "name": "maxLength tightened",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string",
+      "maxLength": 64
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string",
+      "maxLength": 32
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "ids between 33 and 64 characters fail"
+  },
+  {
+   "name": "maxLength loosened",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string",
+      "maxLength": 32
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string",
+      "maxLength": 64
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "consumers sized for 32 characters receive 64"
+  },
+  {
+   "name": "minimum added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "negative amounts in history (refunds) fail"
+  },
+  {
+   "name": "minimum removed",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "consumers assuming non-negative amounts receive negatives"
+  },
+  {
+   "name": "exclusiveMaximum tightened",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer",
+      "exclusiveMaximum": 1000000
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer",
+      "exclusiveMaximum": 100000
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "large orders in history fail"
+  },
+  {
+   "name": "additionalProperties closed",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ],
+    "additionalProperties": false
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "history with undeclared fields fails"
+  },
+  {
+   "name": "additionalProperties opened",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ],
+    "additionalProperties": false
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "consumers validating strictly receive undeclared fields"
+  },
+  {
+   "name": "nested: required field added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "shipping": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       },
+       "postcode": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "shipping": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       },
+       "postcode": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city",
+       "postcode"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "history without shipping.postcode fails"
+  },
+  {
+   "name": "nested: type changed",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "shipping": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       },
+       "postcode": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "shipping": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       },
+       "postcode": {
+        "type": "integer"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "breaking"
+   },
+   "note": "postcode string \u2192 integer"
+  },
+  {
+   "name": "nested: object closed",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "shipping": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       },
+       "postcode": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "shipping": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       },
+       "postcode": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ],
+      "additionalProperties": false
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "history with extra address fields fails"
+  },
+  {
+   "name": "array items widened",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "line_items": {
+      "type": "array",
+      "items": {
+       "type": "integer"
+      }
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "line_items": {
+      "type": "array",
+      "items": {
+       "type": "number"
+      }
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "item type widening"
+  },
+  {
+   "name": "array items enum value added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "line_items": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "enum": [
+        "a",
+        "b"
+       ]
+      }
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "line_items": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "enum": [
+        "a",
+        "b",
+        "c"
+       ]
+      }
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "unknown item value"
+  },
+  {
+   "name": "array minItems added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "line_items": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "line_items": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "minItems": 1
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "empty arrays in history fail"
+  },
+  {
+   "name": "array uniqueItems added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "line_items": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "line_items": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "uniqueItems": true
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "history with repeated items fails"
+  },
+  {
+   "name": "field renamed, open object",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "state": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "breaking"
+   },
+   "note": "rename = remove + add: the new name is constrained where the old schema allowed anything, and the old name is now unconstrained"
+  },
+  {
+   "name": "required field renamed, closed object",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ],
+    "additionalProperties": false
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "total_cents": {
+      "type": "integer"
+     }
+    },
+    "required": [
+     "order_id",
+     "total_cents"
+    ],
+    "additionalProperties": false
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "breaking"
+   },
+   "note": "every old document has the old name; every new one the new name"
+  },
+  {
+   "name": "format added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "non-uuid ids in history fail (format is asserted)"
+  },
+  {
+   "name": "format removed",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "consumers parsing ids as uuids receive other strings"
+  },
+  {
+   "name": "pattern widened",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "examples": [
+       "EUR",
+       "ABCD",
+       "eu"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3,4}$",
+      "examples": [
+       "EUR",
+       "ABCD",
+       "eu"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "the new pattern accepts a superset; the checker cannot prove it",
+   "known_conservative": true
+  },
+  {
+   "name": "pattern narrowed",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3,4}$",
+      "examples": [
+       "EUR",
+       "ABCD",
+       "eu"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "examples": [
+       "EUR",
+       "ABCD",
+       "eu"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "four-letter codes in history fail; the checker reports both directions",
+   "known_conservative": true
+  },
+  {
+   "name": "anyOf branch added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "ref": {
+      "anyOf": [
+       {
+        "type": "string"
+       }
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "ref": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "integer"
+       }
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "a union widened; the checker does not reason about anyOf",
+   "known_conservative": true
+  },
+  {
+   "name": "multipleOf added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer",
+      "multipleOf": 5
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "amounts not divisible by 5 in history fail; the checker does not reason about multipleOf",
+   "known_conservative": true
+  },
+  {
+   "name": "const changed",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "schema_version": {
+      "const": 1
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "schema_version": {
+      "const": 2
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "breaking"
+   },
+   "note": "every document changes"
+  },
+  {
+   "name": "type constraint dropped",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {},
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "order_id may now be any JSON value"
+  },
+  {
+   "name": "unconstrained field added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "notes": {}
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "safe"
+   },
+   "note": "a declared field with no constraints changes nothing"
+  },
+  {
+   "name": "default added",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ],
+      "default": "placed"
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "safe"
+   },
+   "note": "default is an annotation"
+  },
+  {
+   "name": "object replaced by string",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "shipping": {
+      "type": "object",
+      "properties": {
+       "city": {
+        "type": "string"
+       },
+       "postcode": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "city"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "shipping": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "breaking"
+   },
+   "note": "incompatible type change"
+  },
+  {
+   "name": "nullable and enum value added together",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "enum": [
+       "placed",
+       "shipped",
+       "returned",
+       null
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "label": {
+    "backward": "safe",
+    "forward": "breaking"
+   },
+   "note": "two widenings at once"
+  },
+  {
+   "name": "required field added with default",
+   "old": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents"
+    ]
+   },
+   "new": {
+    "type": "object",
+    "properties": {
+     "order_id": {
+      "type": "string"
+     },
+     "amount_cents": {
+      "type": "integer"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "placed",
+       "shipped"
+      ]
+     },
+     "channel": {
+      "type": "string",
+      "default": "web"
+     }
+    },
+    "required": [
+     "order_id",
+     "amount_cents",
+     "channel"
+    ]
+   },
+   "label": {
+    "backward": "breaking",
+    "forward": "safe"
+   },
+   "note": "a default does not make an absent field valid: validators do not fill defaults"
+  }
+ ]
+}

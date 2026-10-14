@@ -1,0 +1,11 @@
+dataset-registry
+Copyright 2026 Basant Bhattarai
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product includes the OpenLineage 2-0-2 JSON Schema
+(api/internal/lineage/spec/OpenLineage.json), copyright the OpenLineage
+project contributors, licensed under the Apache License, Version 2.0.
+https://openlineage.io/spec/2-0-2/OpenLineage.json
+
+All datasets, teams and people in this repository are fictional.

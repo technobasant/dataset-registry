@@ -1,0 +1,19 @@
+# Go
+/api/bin/
+/api/coverage.out
+/api/coverage.html
+*.test
+
+# Web
+/web/node_modules/
+/web/.next/
+/web/out/
+/web/playwright-report/
+/web/test-results/
+/web/tsconfig.tsbuildinfo
+/web/next-env.d.ts
+
+# Local
+.env
+.DS_Store
+/bench/scratch/
