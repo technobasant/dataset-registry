@@ -1,0 +1,71 @@
+name: dataset-registry
+
+x-signing-key: &signing-key
+  DR_SIGNING_KEY: ${DR_SIGNING_KEY:-local-demo-signing-key-not-for-production}
+
+services:
+  postgres:
+    image: postgres:18.1-alpine
+    environment:
+      POSTGRES_USER: registry
+      POSTGRES_PASSWORD: registry
+      POSTGRES_DB: registry
+    ports: ["${DR_PG_PORT:-55433}:5432"]
+    volumes: ["pgdata:/var/lib/postgresql"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U registry -d registry"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: ./api
+    environment:
+      <<: *signing-key
+      DATABASE_URL: postgres://registry:registry@postgres:5432/registry?sslmode=disable
+      DR_DEV_TOKENS: "true"
+      DR_FRESHNESS_INTERVAL: ${DR_FRESHNESS_INTERVAL:-10s}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports: ["${DR_API_PORT:-8088}:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/registry", "healthcheck"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  web:
+    build: ./web
+    environment:
+      API_URL: http://api:8080
+    ports: ["${DR_WEB_PORT:-3088}:3000"]
+    depends_on:
+      api: { condition: service_healthy }
+
+  prometheus:
+    image: prom/prometheus:v3.13.4
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=2d"]
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/rules.yml:/etc/prometheus/rules.yml:ro
+    ports: ["${DR_PROM_PORT:-9098}:9090"]
+    depends_on: [api]
+
+  # Seeding, the demo walkthrough and benchmarks run inside the compose
+  # network, next to PostgreSQL. `make seed`, `make demo`, `make bench`.
+  tools:
+    build: ./api
+    profiles: [tools]
+    entrypoint: ["/usr/local/bin/drbench"]
+    user: "0"
+    environment:
+      <<: *signing-key
+      DR_API_URL: http://api:8080
+      DR_BENCH_ADMIN_URL: postgres://registry:registry@postgres:5432/registry?sslmode=disable
+    volumes: ["./bench/results:/results"]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+volumes:
+  pgdata:

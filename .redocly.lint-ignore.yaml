@@ -1,0 +1,11 @@
+# This file instructs Redocly's linter to ignore the rules contained for specific parts of your API.
+# See https://redocly.com/docs/cli/ for more information.
+api/internal/lineage/spec/OpenLineage.json:
+  no-invalid-schema-examples:
+    - '#/$defs/RunEvent/allOf/1/properties/eventType/example'
+  no-illogical-composition-keywords:
+    - '#/$defs/Run/properties/facets/anyOf'
+    - '#/$defs/Job/properties/facets/anyOf'
+    - '#/$defs/Dataset/properties/facets/anyOf'
+    - '#/$defs/InputDataset/allOf/1/properties/inputFacets/anyOf'
+    - '#/$defs/OutputDataset/allOf/1/properties/outputFacets/anyOf'

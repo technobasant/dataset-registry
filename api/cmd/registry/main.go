@@ -4,6 +4,7 @@
 //	registry serve      run migrations, the API and the evaluator (default)
 //	registry migrate    apply migrations and exit
 //	registry token -role owner -team checkout -subject amara
+//	registry healthcheck  exit 0 if the local API is ready (for container health checks)
 package main
 
 import (
@@ -16,6 +17,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -43,6 +45,8 @@ func main() {
 		err = migrate()
 	case "token":
 		err = token(os.Args[2:])
+	case "healthcheck":
+		err = healthcheck()
 	default:
 		err = fmt.Errorf("unknown command %q (serve, migrate, token)", cmd)
 	}
@@ -88,6 +92,23 @@ func connect(ctx context.Context) (*pgxpool.Pool, error) {
 		time.Sleep(time.Second)
 	}
 	return nil, fmt.Errorf("database not reachable: %w", err)
+}
+
+func healthcheck() error {
+	addr := env("DR_ADDR", ":8080")
+	if strings.HasPrefix(addr, ":") {
+		addr = "127.0.0.1" + addr
+	}
+	c := &http.Client{Timeout: 2 * time.Second}
+	res, err := c.Get("http://" + addr + "/readyz")
+	if err != nil {
+		return err
+	}
+	defer func() { _ = res.Body.Close() }()
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("readyz: %s", res.Status)
+	}
+	return nil
 }
 
 func migrate() error {

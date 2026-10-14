@@ -1,0 +1,17 @@
+groups:
+  - name: dataset-freshness
+    rules:
+      - alert: DatasetFreshnessSLOBreached
+        expr: registry_dataset_slo_status{status="breached"} == 1
+        labels:
+          severity: page
+        annotations:
+          summary: "{{ $labels.dataset }} is staler than its owner promised"
+          description: "Owner team {{ $labels.owner_team }}; last write {{ with printf `registry_dataset_staleness_seconds{dataset=\"%s\"}` $labels.dataset | query }}{{ . | first | value | humanizeDuration }}{{ end }} ago."
+      - alert: DatasetFreshnessAtRisk
+        expr: registry_dataset_slo_status{status="at_risk"} == 1
+        for: 5m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "{{ $labels.dataset }} has used more than 75% of its freshness SLO"

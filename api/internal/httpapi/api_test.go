@@ -477,3 +477,11 @@ func TestFreshnessEvaluator(t *testing.T) {
 		t.Errorf("metrics should expose the status")
 	}
 }
+
+func TestTracingSetup(t *testing.T) {
+	shutdown, err := telemetry.Tracing(context.Background(), "dataset-registry-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = shutdown(context.Background())
+}

@@ -1,1 +1,795 @@
 openapi: 3.1.0
+info:
+  title: dataset-registry
+  version: 0.1.0
+  summary: Ownership, freshness SLOs, versioned contracts, lineage and consumers for every dataset.
+  description: |
+    Reads are open. Writes need a bearer token carrying a role (`admin`, `owner`,
+    `consumer`) and a team. The development token issuer is not production
+    authentication.
+
+    Errors are RFC 9457 problem details (`application/problem+json`).
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+servers:
+  - url: http://localhost:8088
+    description: make up
+tags:
+  - name: datasets
+    description: Registration, ownership, tier and freshness SLO.
+  - name: schemas
+    description: Versioned contracts and the compatibility checker.
+  - name: consumers
+    description: Teams that depend on a dataset.
+  - name: change-requests
+    description: Breaking changes waiting on consumer acknowledgement.
+  - name: lineage
+    description: OpenLineage ingest and graph queries.
+  - name: operations
+    description: Health, metrics, tokens and the audit log.
+security:
+  - {}
+  - bearer: []
+paths:
+  /healthz:
+    get:
+      tags: [operations]
+      operationId: healthz
+      summary: Liveness
+      security: [{}]
+      responses:
+        "200": { description: Alive }
+  /readyz:
+    get:
+      tags: [operations]
+      operationId: readyz
+      summary: Readiness (database reachable)
+      security: [{}]
+      responses:
+        "200": { description: Ready }
+        "503": { $ref: "#/components/responses/Problem" }
+  /metrics:
+    get:
+      tags: [operations]
+      operationId: metrics
+      summary: Prometheus metrics
+      security: [{}]
+      responses:
+        "200":
+          description: Prometheus text exposition
+          content:
+            text/plain:
+              schema: { type: string }
+  /api/v1/dev/tokens:
+    post:
+      tags: [operations]
+      operationId: issueDevToken
+      summary: Issue a development token (only when DR_DEV_TOKENS=true)
+      security: [{}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject, role, team]
+              properties:
+                subject: { type: string }
+                role: { $ref: "#/components/schemas/Role" }
+                team: { type: string }
+      responses:
+        "201":
+          description: Token
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token]
+                properties:
+                  token: { type: string }
+                  warning: { type: string }
+        "400": { $ref: "#/components/responses/Problem" }
+  /api/v1/whoami:
+    get:
+      tags: [operations]
+      operationId: whoami
+      summary: The caller as the API sees it
+      responses:
+        "200":
+          description: Principal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Principal" }
+        "401": { $ref: "#/components/responses/Problem" }
+  /api/v1/datasets:
+    get:
+      tags: [datasets]
+      operationId: listDatasets
+      summary: List datasets, owned ones first
+      parameters:
+        - { name: registered, in: query, schema: { type: boolean } }
+        - { name: slo_status, in: query, schema: { $ref: "#/components/schemas/SLOStatus" } }
+        - { name: owner_team, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 20000, default: 1000 } }
+      responses:
+        "200":
+          description: Datasets
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [datasets]
+                properties:
+                  datasets:
+                    type: array
+                    items: { $ref: "#/components/schemas/Dataset" }
+        "400": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [datasets]
+      operationId: createDataset
+      summary: Register a dataset, or claim one lineage discovered
+      description: Owners register for their own team; admins for any. An optional schema becomes version 1.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DatasetInput" }
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Dataset" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /api/v1/datasets/by-name:
+    get:
+      tags: [datasets]
+      operationId: getDatasetByName
+      summary: Look a dataset up by its OpenLineage namespace and name
+      parameters:
+        - { name: namespace, in: query, required: true, schema: { type: string } }
+        - { name: name, in: query, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Dataset
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DatasetDetail" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /api/v1/datasets/{id}:
+    parameters:
+      - $ref: "#/components/parameters/DatasetID"
+    get:
+      tags: [datasets]
+      operationId: getDataset
+      summary: A dataset with its consumers, versions, open change request and SLO history
+      responses:
+        "200":
+          description: Dataset
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DatasetDetail" }
+        "404": { $ref: "#/components/responses/Problem" }
+    patch:
+      tags: [datasets]
+      operationId: updateDataset
+      summary: Change owner, tier, SLO or compatibility mode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DatasetInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Dataset" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [datasets]
+      operationId: deleteDataset
+      summary: Delete a dataset (owners only when nobody depends on it)
+      responses:
+        "204": { description: Deleted }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+  /api/v1/datasets/{id}/schemas:
+    parameters:
+      - $ref: "#/components/parameters/DatasetID"
+    get:
+      tags: [schemas]
+      operationId: listSchemas
+      summary: Every contract version, newest first
+      responses:
+        "200":
+          description: Versions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [versions]
+                properties:
+                  versions:
+                    type: array
+                    items: { $ref: "#/components/schemas/SchemaVersion" }
+        "404": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [schemas]
+      operationId: proposeSchema
+      summary: Propose a new contract version
+      description: |
+        A change that is compatible under the dataset's mode is published (201). A
+        breaking one is stored as pending and opens a change request (202).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SchemaBody" }
+      responses:
+        "201":
+          description: Published
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProposeResult" }
+        "202":
+          description: Breaking; a change request is waiting on consumers
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProposeResult" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /api/v1/datasets/{id}/schemas/{version}:
+    parameters:
+      - $ref: "#/components/parameters/DatasetID"
+      - { name: version, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    get:
+      tags: [schemas]
+      operationId: getSchema
+      summary: One contract version
+      responses:
+        "200":
+          description: Version
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SchemaVersion" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /api/v1/datasets/{id}/compatibility-check:
+    parameters:
+      - $ref: "#/components/parameters/DatasetID"
+    post:
+      tags: [schemas]
+      operationId: checkSchema
+      summary: What proposing this schema would do, without storing it
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SchemaBody" }
+      responses:
+        "200":
+          description: Report
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CompatibilityReport" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /api/v1/datasets/{id}/compatibility:
+    parameters:
+      - $ref: "#/components/parameters/DatasetID"
+    get:
+      tags: [schemas]
+      operationId: compareVersions
+      summary: Compare two stored versions
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: integer, minimum: 1 } }
+        - { name: to, in: query, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        "200":
+          description: Report
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CompatibilityReport" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /api/v1/datasets/{id}/consumers:
+    parameters:
+      - $ref: "#/components/parameters/DatasetID"
+    get:
+      tags: [consumers]
+      operationId: listConsumers
+      summary: Teams that depend on the dataset
+      responses:
+        "200":
+          description: Consumers
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [consumers]
+                properties:
+                  consumers:
+                    type: array
+                    items: { $ref: "#/components/schemas/Consumer" }
+        "400": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [consumers]
+      operationId: addConsumer
+      summary: Register your team as a consumer (only of an owned dataset)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contact]
+              properties:
+                team: { type: string, description: Defaults to the caller's team; only admins may name another. }
+                contact: { type: string }
+                purpose: { type: string }
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Consumer" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+  /api/v1/datasets/{id}/consumers/{team}:
+    parameters:
+      - $ref: "#/components/parameters/DatasetID"
+      - { name: team, in: path, required: true, schema: { type: string } }
+    delete:
+      tags: [consumers]
+      operationId: removeConsumer
+      summary: Unregister; drops the team's pending review on an open change request
+      responses:
+        "204": { description: Removed }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /api/v1/datasets/{id}/lineage:
+    parameters:
+      - $ref: "#/components/parameters/DatasetID"
+    get:
+      tags: [lineage]
+      operationId: lineageGraph
+      summary: Upstream and/or downstream graph, N dataset hops
+      parameters:
+        - { name: direction, in: query, schema: { type: string, enum: [upstream, downstream, both], default: both } }
+        - { name: depth, in: query, schema: { type: integer, minimum: 1, maximum: 10, default: 2 } }
+      responses:
+        "200":
+          description: Graph
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LineageGraph" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /api/v1/datasets/{id}/slo-history:
+    parameters:
+      - $ref: "#/components/parameters/DatasetID"
+    get:
+      tags: [datasets]
+      operationId: sloHistory
+      summary: Freshness status transitions, newest first
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 1000, default: 100 } }
+      responses:
+        "200":
+          description: Transitions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [transitions]
+                properties:
+                  transitions:
+                    type: array
+                    items: { $ref: "#/components/schemas/SLOTransition" }
+        "400": { $ref: "#/components/responses/Problem" }
+  /api/v1/change-requests:
+    get:
+      tags: [change-requests]
+      operationId: listChangeRequests
+      summary: Change requests, newest first
+      parameters:
+        - { name: dataset_id, in: query, schema: { type: integer } }
+        - { name: state, in: query, schema: { $ref: "#/components/schemas/ChangeRequestState" } }
+        - { name: consumer_team, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Change requests
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [change_requests]
+                properties:
+                  change_requests:
+                    type: array
+                    items: { $ref: "#/components/schemas/ChangeRequest" }
+        "400": { $ref: "#/components/responses/Problem" }
+  /api/v1/change-requests/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ChangeRequestID"
+    get:
+      tags: [change-requests]
+      operationId: getChangeRequest
+      summary: A change request with its reviews
+      responses:
+        "200":
+          description: Change request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChangeRequest" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /api/v1/change-requests/{id}/reviews:
+    parameters:
+      - $ref: "#/components/parameters/ChangeRequestID"
+    post:
+      tags: [change-requests]
+      operationId: reviewChangeRequest
+      summary: Acknowledge or reject, for the caller's own team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [acknowledged, rejected] }
+                reason: { type: string, description: Required when rejecting. }
+      responses:
+        "200":
+          description: Recorded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChangeRequest" }
+        "400": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+  /api/v1/change-requests/{id}/publish:
+    parameters:
+      - $ref: "#/components/parameters/ChangeRequestID"
+    post:
+      tags: [change-requests]
+      operationId: publishChangeRequest
+      summary: Publish an approved change request (dataset owner)
+      responses:
+        "200":
+          description: Published
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChangeRequest" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+  /api/v1/change-requests/{id}/withdraw:
+    parameters:
+      - $ref: "#/components/parameters/ChangeRequestID"
+    post:
+      tags: [change-requests]
+      operationId: withdrawChangeRequest
+      summary: Withdraw an open or approved change request (dataset owner)
+      responses:
+        "200":
+          description: Withdrawn
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChangeRequest" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+  /api/v1/lineage:
+    post:
+      tags: [lineage]
+      operationId: ingestLineage
+      summary: Ingest one OpenLineage RunEvent (owner or admin token)
+      description: The body is validated against the OpenLineage 2-0-2 RunEvent schema shipped with the API.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../internal/lineage/spec/OpenLineage.json#/$defs/RunEvent"
+      responses:
+        "201":
+          description: Stored
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [job_id, datasets, edges, writes_recorded]
+                properties:
+                  job_id: { type: integer }
+                  datasets: { type: integer }
+                  edges: { type: integer }
+                  writes_recorded: { type: integer }
+        "400": { $ref: "#/components/responses/Problem" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+  /api/v1/audit:
+    get:
+      tags: [operations]
+      operationId: listAudit
+      summary: The append-only audit log, newest first
+      parameters:
+        - { name: entity_type, in: query, schema: { type: string, enum: [dataset, change_request] } }
+        - { name: entity_id, in: query, schema: { type: integer } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 1000, default: 100 } }
+      responses:
+        "200":
+          description: Entries
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [entries]
+                properties:
+                  entries:
+                    type: array
+                    items: { $ref: "#/components/schemas/AuditEntry" }
+        "400": { $ref: "#/components/responses/Problem" }
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    DatasetID:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    ChangeRequestID:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+  responses:
+    Problem:
+      description: RFC 9457 problem details
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+  schemas:
+    Role:
+      type: string
+      enum: [admin, owner, consumer]
+    Principal:
+      type: object
+      required: [subject, role, team]
+      properties:
+        subject: { type: string }
+        role: { type: string }
+        team: { type: string }
+    Problem:
+      type: object
+      required: [title, status, code, detail]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        code: { type: string }
+        detail: { type: string }
+        extra: { description: Structured context such as schema validation errors. }
+    SLOStatus:
+      type: string
+      enum: [unknown, healthy, at_risk, breached]
+    Owner:
+      type: object
+      required: [team, person]
+      properties:
+        team: { type: string }
+        person: { type: string }
+    DatasetInput:
+      type: object
+      properties:
+        namespace: { type: string, examples: ["iceberg://lake"] }
+        name: { type: string, examples: ["sales.orders"] }
+        description: { type: string }
+        owner: { $ref: "#/components/schemas/Owner" }
+        tier: { type: string, enum: [gold, silver, bronze] }
+        freshness_slo_seconds: { type: integer, minimum: 1 }
+        clear_slo: { type: boolean }
+        compatibility: { $ref: "#/components/schemas/CompatibilityMode" }
+        schema: { type: object, description: 'A JSON Schema (draft 2020-12) with "type": "object" at the root.' }
+    Dataset:
+      type: object
+      required: [id, namespace, name, registered, tier, compatibility, slo_status, created_at]
+      properties:
+        id: { type: integer }
+        namespace: { type: string }
+        name: { type: string }
+        description: { type: string }
+        registered: { type: boolean, description: "False for datasets seen only in lineage, which nobody owns." }
+        owner:
+          oneOf:
+            - $ref: "#/components/schemas/Owner"
+            - type: "null"
+        tier: { type: string, enum: [gold, silver, bronze] }
+        freshness_slo_seconds: { type: [integer, "null"] }
+        compatibility: { $ref: "#/components/schemas/CompatibilityMode" }
+        last_write_at: { type: [string, "null"], format: date-time }
+        last_write_run: { type: [string, "null"], format: uuid }
+        slo_status: { $ref: "#/components/schemas/SLOStatus" }
+        slo_status_since: { type: [string, "null"], format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        consumer_count: { type: integer }
+        current_version: { type: integer }
+        open_change_request_id: { type: integer }
+    DatasetDetail:
+      allOf:
+        - $ref: "#/components/schemas/Dataset"
+        - type: object
+          required: [consumers, versions, slo_history]
+          properties:
+            consumers:
+              type: array
+              items: { $ref: "#/components/schemas/Consumer" }
+            versions:
+              type: array
+              items: { $ref: "#/components/schemas/SchemaVersion" }
+            open_change_request:
+              oneOf:
+                - $ref: "#/components/schemas/ChangeRequest"
+                - type: "null"
+            slo_history:
+              type: array
+              items: { $ref: "#/components/schemas/SLOTransition" }
+    SchemaBody:
+      type: object
+      required: [schema]
+      properties:
+        schema: { type: object }
+    SchemaVersion:
+      type: object
+      required: [version, status, schema, created_by, created_at]
+      properties:
+        version: { type: integer }
+        status: { type: string, enum: [published, pending, rejected, withdrawn] }
+        schema: { type: object }
+        created_by: { type: string }
+        created_at: { type: string, format: date-time }
+    CompatibilityMode:
+      type: string
+      enum: [BACKWARD, FORWARD, FULL, NONE]
+      description: |
+        BACKWARD: every document valid under the old version is valid under the new.
+        FORWARD (default): every document valid under the new version is valid under the old, so consumers are safe.
+        FULL: both.
+    CompatibilityChange:
+      type: object
+      required: [path, kind, detail, breaks_backward, breaks_forward, breaking, reason]
+      properties:
+        path: { type: string, examples: ["$.amount_cents"] }
+        kind: { type: string, examples: [type_widened, enum_value_added, optional_to_required] }
+        detail: { type: string }
+        breaks_backward: { type: boolean }
+        breaks_forward: { type: boolean }
+        breaking: { type: boolean, description: Verdict under the report's mode. }
+        reason: { type: string }
+    CompatibilityReport:
+      type: object
+      required: [mode, compatible, breaking_count, changes]
+      properties:
+        mode: { $ref: "#/components/schemas/CompatibilityMode" }
+        compatible: { type: boolean }
+        breaking_count: { type: integer }
+        breaks_backward: { type: boolean }
+        breaks_forward: { type: boolean }
+        changes:
+          type: array
+          items: { $ref: "#/components/schemas/CompatibilityChange" }
+    ProposeResult:
+      type: object
+      required: [version, published]
+      properties:
+        version: { $ref: "#/components/schemas/SchemaVersion" }
+        published: { type: boolean }
+        report: { $ref: "#/components/schemas/CompatibilityReport" }
+        change_request: { $ref: "#/components/schemas/ChangeRequest" }
+    Consumer:
+      type: object
+      required: [team, contact, purpose, created_at]
+      properties:
+        team: { type: string }
+        contact: { type: string }
+        purpose: { type: string }
+        created_at: { type: string, format: date-time }
+    ChangeRequestState:
+      type: string
+      enum: [open, approved, published, rejected, withdrawn]
+    Review:
+      type: object
+      required: [consumer_team, reason]
+      properties:
+        consumer_team: { type: string }
+        decision: { type: [string, "null"], enum: [acknowledged, rejected, null] }
+        reason: { type: string }
+        decided_by: { type: [string, "null"] }
+        decided_at: { type: [string, "null"], format: date-time }
+    ChangeRequest:
+      type: object
+      required: [id, dataset_id, dataset, from_version, to_version, state, report, opened_by, opened_at]
+      properties:
+        id: { type: integer }
+        dataset_id: { type: integer }
+        dataset: { type: string }
+        owner_team: { type: string }
+        from_version: { type: integer }
+        to_version: { type: integer }
+        state: { $ref: "#/components/schemas/ChangeRequestState" }
+        report: { $ref: "#/components/schemas/CompatibilityReport" }
+        opened_by: { type: string }
+        opened_at: { type: string, format: date-time }
+        closed_at: { type: [string, "null"], format: date-time }
+        pending_reviews: { type: integer }
+        reviews:
+          type: array
+          items: { $ref: "#/components/schemas/Review" }
+    SLOTransition:
+      type: object
+      required: [from, to, staleness_ms, detected_at]
+      properties:
+        from: { $ref: "#/components/schemas/SLOStatus" }
+        to: { $ref: "#/components/schemas/SLOStatus" }
+        staleness_ms: { type: integer }
+        deadline_at: { type: [string, "null"], format: date-time }
+        detected_at: { type: string, format: date-time }
+    LineageNode:
+      type: object
+      required: [id, kind, namespace, name, registered, depth]
+      properties:
+        id: { type: string, examples: ["d:12", "j:5"] }
+        kind: { type: string, enum: [dataset, job] }
+        dataset_id: { type: integer }
+        namespace: { type: string }
+        name: { type: string }
+        registered: { type: boolean }
+        owner_team: { type: string }
+        slo_status: { $ref: "#/components/schemas/SLOStatus" }
+        last_state: { type: string }
+        depth: { type: integer, description: Graph steps from the root; negative upstream. }
+    LineageGraph:
+      type: object
+      required: [root, direction, depth, nodes, edges]
+      properties:
+        root: { type: string }
+        direction: { type: string, enum: [upstream, downstream, both] }
+        depth: { type: integer }
+        nodes:
+          type: array
+          items: { $ref: "#/components/schemas/LineageNode" }
+        edges:
+          type: array
+          items:
+            type: object
+            required: [from, to]
+            properties:
+              from: { type: string }
+              to: { type: string }
+    AuditEntry:
+      type: object
+      required: [id, at, actor, action, entity_type, entity_id, details]
+      properties:
+        id: { type: integer }
+        at: { type: string, format: date-time }
+        actor: { type: string }
+        action: { type: string }
+        entity_type: { type: string }
+        entity_id: { type: integer }
+        details: { type: object }

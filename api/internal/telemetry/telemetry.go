@@ -10,11 +10,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -44,8 +44,7 @@ func (h traceHandler) WithGroup(n string) slog.Handler { return traceHandler{h.H
 // OTEL_EXPORTER_OTLP_ENDPOINT is set; otherwise they are created (so logs carry
 // trace IDs) and dropped.
 func Tracing(ctx context.Context, service string) (func(context.Context) error, error) {
-	res, err := resource.Merge(resource.Default(), resource.NewWithAttributes(semconv.SchemaURL,
-		semconv.ServiceName(service)))
+	res, err := resource.Merge(resource.Default(), resource.NewSchemaless(attribute.String("service.name", service)))
 	if err != nil {
 		return nil, err
 	}
