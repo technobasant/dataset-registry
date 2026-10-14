@@ -104,6 +104,24 @@ func (q *Queries) DecideReview(ctx context.Context, arg DecideReviewParams) (int
 	return result.RowsAffected(), nil
 }
 
+const dropUndecidedReview = `-- name: DropUndecidedReview :execrows
+DELETE FROM change_request_reviews
+WHERE change_request_id = $1 AND consumer_team = $2 AND decision IS NULL
+`
+
+type DropUndecidedReviewParams struct {
+	ChangeRequestID int64
+	ConsumerTeam    string
+}
+
+func (q *Queries) DropUndecidedReview(ctx context.Context, arg DropUndecidedReviewParams) (int64, error) {
+	result, err := q.db.Exec(ctx, dropUndecidedReview, arg.ChangeRequestID, arg.ConsumerTeam)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getChangeRequest = `-- name: GetChangeRequest :one
 SELECT cr.id, cr.dataset_id, cr.schema_version_id, cr.from_version, cr.state, cr.report, cr.opened_by, cr.opened_at, cr.closed_at, sv.version AS to_version, d.namespace, d.name, d.owner_team
 FROM change_requests cr
@@ -260,6 +278,27 @@ SELECT id, dataset_id, schema_version_id, from_version, state, report, opened_by
 
 func (q *Queries) LockChangeRequest(ctx context.Context, id int64) (ChangeRequest, error) {
 	row := q.db.QueryRow(ctx, lockChangeRequest, id)
+	var i ChangeRequest
+	err := row.Scan(
+		&i.ID,
+		&i.DatasetID,
+		&i.SchemaVersionID,
+		&i.FromVersion,
+		&i.State,
+		&i.Report,
+		&i.OpenedBy,
+		&i.OpenedAt,
+		&i.ClosedAt,
+	)
+	return i, err
+}
+
+const openChangeRequestForDataset = `-- name: OpenChangeRequestForDataset :one
+SELECT id, dataset_id, schema_version_id, from_version, state, report, opened_by, opened_at, closed_at FROM change_requests WHERE dataset_id = $1 AND state IN ('open', 'approved')
+`
+
+func (q *Queries) OpenChangeRequestForDataset(ctx context.Context, datasetID int64) (ChangeRequest, error) {
+	row := q.db.QueryRow(ctx, openChangeRequestForDataset, datasetID)
 	var i ChangeRequest
 	err := row.Scan(
 		&i.ID,

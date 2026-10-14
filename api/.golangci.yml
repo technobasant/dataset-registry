@@ -1,0 +1,28 @@
+version: "2"
+run:
+  timeout: 5m
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - misspell
+    - nilerr
+    - revive
+    - unconvert
+    - usestdlibvars
+  settings:
+    revive:
+      rules:
+        - name: exported
+          arguments: [disableStutteringCheck]
+  exclusions:
+    generated: lax
+    rules:
+      - path: _test\.go
+        linters: [revive]
+formatters:
+  enable: [gofmt, goimports]
+  settings:
+    goimports:
+      local-prefixes: [github.com/technobasant/dataset-registry]

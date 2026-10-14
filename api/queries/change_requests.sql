@@ -48,3 +48,10 @@ UPDATE change_requests
 SET state = $2,
     closed_at = CASE WHEN $2 IN ('published', 'rejected', 'withdrawn') THEN now() ELSE closed_at END
 WHERE id = $1;
+
+-- name: OpenChangeRequestForDataset :one
+SELECT * FROM change_requests WHERE dataset_id = $1 AND state IN ('open', 'approved');
+
+-- name: DropUndecidedReview :execrows
+DELETE FROM change_request_reviews
+WHERE change_request_id = $1 AND consumer_team = $2 AND decision IS NULL;
