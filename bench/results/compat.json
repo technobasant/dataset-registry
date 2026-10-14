@@ -1,0 +1,63 @@
+{
+  "by_mode": {
+    "BACKWARD": {
+      "accuracy": 0.9607843137254902,
+      "fn": 0,
+      "fp": 2,
+      "tn": 20,
+      "tp": 29
+    },
+    "FORWARD": {
+      "accuracy": 0.9607843137254902,
+      "fn": 0,
+      "fp": 2,
+      "tn": 22,
+      "tp": 27
+    },
+    "FULL": {
+      "accuracy": 1,
+      "fn": 0,
+      "fp": 0,
+      "tn": 4,
+      "tp": 47
+    }
+  },
+  "cases": 51,
+  "compare_us_p50": 17,
+  "compare_us_p95": 63.99999999999999,
+  "environment": {
+    "at": "2026-10-14T08:55:46Z",
+    "cpus": 8,
+    "go": "go1.27.2",
+    "goarch": "arm64",
+    "goos": "linux"
+  },
+  "misses": [
+    {
+      "case": "pattern widened",
+      "checker_breaking": true,
+      "label_breaking": false,
+      "mode": "BACKWARD"
+    },
+    {
+      "case": "pattern narrowed",
+      "checker_breaking": true,
+      "label_breaking": false,
+      "mode": "FORWARD"
+    },
+    {
+      "case": "anyOf branch added",
+      "checker_breaking": true,
+      "label_breaking": false,
+      "mode": "BACKWARD"
+    },
+    {
+      "case": "multipleOf added",
+      "checker_breaking": true,
+      "label_breaking": false,
+      "mode": "FORWARD"
+    }
+  ],
+  "oracle_agrees_with_labels": 51,
+  "oracle_probes_total": 8092
+}
