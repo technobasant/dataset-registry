@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main id="main">{children}</main>
         <footer className="foot">
-          Lumen &amp; Loom is fictional. Personas use a development token issuer, not real authentication.
+          Lumen &amp; Loom is a demo scenario. Personas use a development token issuer, not real authentication.
         </footer>
       </body>
     </html>

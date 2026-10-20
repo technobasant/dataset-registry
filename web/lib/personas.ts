@@ -1,4 +1,4 @@
-// Fictional people at Lumen & Loom. The persona decides which token the UI
+// Invented people at Lumen & Loom. The persona decides which token the UI
 // uses; it is a demo device, not authentication.
 export interface Persona {
   id: string;

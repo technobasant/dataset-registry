@@ -21,6 +21,6 @@ First release.
   production authentication.
 - Next.js UI: datasets by SLO status, dataset pages with consumers, contract diffs and the
   checker's report, a React Flow lineage graph, change-request review and publish.
-- `make up`, `make seed`, `make demo` for a fictional retailer, Lumen & Loom; Playwright
+- `make up`, `make seed`, `make demo` for Lumen & Loom, an online homewares retailer; Playwright
   end-to-end tests; measurements of ingest, lineage queries, reads, breach detection, the
   checker and Lighthouse in MEASUREMENTS.md.

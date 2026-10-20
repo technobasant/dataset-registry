@@ -17,7 +17,7 @@ import (
 	"github.com/technobasant/dataset-registry/api/internal/auth"
 )
 
-// The catalogue of Lumen & Loom, a fictional homewares retailer: Kafka topics
+// The catalogue of Lumen & Loom, an online homewares retailer: Kafka topics
 // land in Iceberg through Spark, dbt models build marts, Airflow loads a few
 // things by hand, and a feature pipeline feeds the ML team. Everyone and
 // everything here is invented.

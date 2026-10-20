@@ -10,8 +10,8 @@ and a list of the teams that depend on it. A breaking change to the contract doe
 blocked and does not get shipped quietly; it waits until every one of those teams has
 acknowledged it.
 
-The data belongs to Lumen & Loom, the same fictional homewares retailer as in
-[governed-agent](https://github.com/technobasant/governed-agent),
+The data belongs to Lumen & Loom, an online homewares retailer — a standard e-commerce
+scenario shared with [governed-agent](https://github.com/technobasant/governed-agent),
 [streaming-platform](https://github.com/technobasant/streaming-platform) and
 [realtime-ml](https://github.com/technobasant/realtime-ml): orders and payments on Kafka,
 landed in Iceberg by Spark, modelled by dbt, a few loads in Airflow, and a feature pipeline
